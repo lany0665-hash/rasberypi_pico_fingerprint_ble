@@ -156,6 +156,13 @@ HTTPS를 사용합니다. Wi-Fi 연결 뒤 `ntptime`으로 UTC 시간을 동기�
 | `wifi.py` | 명시적 Pico W Wi-Fi 연결 도우미 |
 | `firebase.py` | 최소 HTTPS Firebase RTDB REST 이벤트 보고기 |
 | `secrets.example.py` | 복사 전용 비밀 설정 템플릿 |
+| `web/` | Web Bluetooth 제어 및 Firebase 이력 관리 정적 웹 앱 |
+
+## 웹 제어 앱
+
+`web/`에는 Pico W를 Web Bluetooth로 제어하고 Firebase 이벤트 이력을
+관리하는 의존성 없는 브라우저 앱이 있습니다. 설치, 보안 설정, 지원 브라우저,
+BLE 명령 매핑은 [`web/README.md`](web/README.md)를 참고하십시오.
 
 ## 제한 및 보안 주의
 

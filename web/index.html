@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Pico W AS608 BLE fingerprint controller">
+  <title>Pico W 지문 센서 제어</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./config.js" defer></script>
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">PICO W · AS608 · BLE</p>
+      <h1>지문 센서 제어</h1>
+    </div>
+    <p id="global-status" class="status status-neutral" role="status">연결할 준비가 되었습니다.</p>
+  </header>
+
+  <main>
+    <section class="notice" aria-labelledby="browser-notice">
+      <h2 id="browser-notice">브라우저 요구 사항</h2>
+      <p>Web Bluetooth는 <strong>HTTPS 또는 localhost</strong>의 Chromium 계열 브라우저(Chrome, Edge 등)에서만 사용할 수 있습니다. 기기 선택 창은 반드시 아래 <strong>BLE 기기 연결</strong> 버튼을 누를 때 열립니다. Safari와 iPhone/iPad의 일반 브라우저는 지원하지 않습니다.</p>
+      <p id="bluetooth-support" class="support-message"></p>
+    </section>
+
+    <div class="layout">
+      <section class="card ble-card" aria-labelledby="ble-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">BLUETOOTH LOW ENERGY</p>
+            <h2 id="ble-title">Pico W 제어</h2>
+          </div>
+          <span id="ble-state" class="badge">연결 안 됨</span>
+        </div>
+
+        <dl class="connection-details">
+          <div><dt>기기</dt><dd id="device-name">선택되지 않음</dd></div>
+          <div><dt>등록 상태</dt><dd id="enrollment-state">알 수 없음</dd></div>
+          <div><dt>센서 인증</dt><dd id="verification-state">확인 전</dd></div>
+        </dl>
+
+        <div class="button-row">
+          <button id="connect-button" type="button">BLE 기기 연결</button>
+          <button id="disconnect-button" type="button" class="secondary" disabled>연결 해제</button>
+          <button id="status-button" type="button" class="secondary" disabled>상태 새로고침</button>
+          <button id="verify-button" type="button" class="secondary" disabled>센서 인증</button>
+        </div>
+
+        <div class="control-group">
+          <h3>지문 등록</h3>
+          <label for="enroll-id">템플릿 ID <span class="hint">(0–999)</span></label>
+          <input id="enroll-id" type="number" min="0" max="999" step="1" inputmode="numeric" value="0">
+          <div class="button-row">
+            <button id="enroll-button" type="button" disabled>등록 시작</button>
+            <button id="next-button" type="button" class="secondary" disabled>다음 스캔</button>
+            <button id="cancel-button" type="button" class="danger-outline" disabled>등록 취소</button>
+          </div>
+          <p id="enrollment-help" class="hint">센서 인증 후 등록할 템플릿 ID를 입력하십시오.</p>
+        </div>
+
+        <div class="control-group">
+          <h3>검색 및 관리</h3>
+          <div class="button-row">
+            <button id="identify-button" type="button" disabled>지문 식별</button>
+            <button id="count-button" type="button" class="secondary" disabled>템플릿 개수</button>
+          </div>
+          <label for="delete-id">삭제할 템플릿 ID <span class="hint">(0–999)</span></label>
+          <div class="inline-control">
+            <input id="delete-id" type="number" min="0" max="999" step="1" inputmode="numeric" value="0">
+            <button id="delete-button" type="button" class="danger-outline" disabled>템플릿 삭제</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card event-card" aria-labelledby="event-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">LIVE EVENTS</p>
+            <h2 id="event-title">BLE 이벤트</h2>
+          </div>
+          <button id="clear-events-button" type="button" class="text-button">화면 지우기</button>
+        </div>
+        <p id="event-empty" class="empty-state">수신한 BLE 이벤트가 없습니다.</p>
+        <ol id="event-list" class="event-list" aria-live="polite"></ol>
+      </section>
+
+      <section class="card firebase-card" aria-labelledby="firebase-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">FIREBASE REALTIME DATABASE</p>
+            <h2 id="firebase-title">이력 조회 및 관리</h2>
+          </div>
+          <button id="refresh-history-button" type="button" disabled>이력 새로고침</button>
+        </div>
+        <p class="hint">이 값은 이 브라우저 메모리에만 유지됩니다. 장치의 <code>secrets.py</code>와는 별도입니다.</p>
+
+        <div class="form-grid">
+          <label>RTDB URL
+            <input id="firebase-url" type="url" placeholder="https://your-project-default-rtdb.firebaseio.com">
+          </label>
+          <label>장치 ID
+            <input id="firebase-device-id" type="text" placeholder="pico-w-01" maxlength="128">
+          </label>
+          <label class="wide">Firebase 사용자 ID 토큰
+            <input id="firebase-token" type="password" autocomplete="off" placeholder="읽기/삭제 권한이 있는 단기 사용자 토큰">
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="apply-firebase-button" type="button" class="secondary">Firebase 설정 적용</button>
+        </div>
+
+        <div class="history-filters" aria-label="이력 필터">
+          <label>이벤트
+            <select id="history-event-filter">
+              <option value="">전체 이벤트</option>
+              <option value="enroll_complete">등록 완료</option>
+              <option value="match">일치</option>
+              <option value="no_match">불일치</option>
+              <option value="sensor_error">센서 오류</option>
+              <option value="firebase_error">Firebase 오류</option>
+            </select>
+          </label>
+          <label>텍스트 검색
+            <input id="history-text-filter" type="search" placeholder="ID, 메시지, 상태">
+          </label>
+        </div>
+        <p id="history-status" class="status status-neutral" role="status">Firebase 설정을 입력한 뒤 적용하십시오.</p>
+        <div class="history-wrap">
+          <table>
+            <thead><tr><th>이벤트 ID</th><th>이벤트</th><th>상태 / 내용</th><th>관리</th></tr></thead>
+            <tbody id="history-body"></tbody>
+          </table>
+          <p id="history-empty" class="empty-state">표시할 Firebase 이력이 없습니다.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
